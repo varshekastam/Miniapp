@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مینی اپ من</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background: #1e1e1e;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        button {
+            background: #10a37f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>سلام از مینی اپ!</h1>
+    <p id="userName"></p>
+    <button onclick="sendData()">ارسال پیام به ربات</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('userName').innerText = 'خوش اومدی ' + tg.initDataUnsafe.user.first_name;
+        }
+
+        function sendData() {
+            tg.sendData("سلام از طرف مینی اپ!");
+        }
+    </script>
+</body>
+</html>
